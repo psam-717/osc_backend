@@ -1,3 +1,13 @@
+''''FUNCTIONS'''
+# A function in Python is a named block of reusable code that performs a specific task.
+
+# It lets you:
+
+# give a name to a piece of logic
+# run that logic whenever you want (and as many times as you want)
+# optionally receive input (arguments/parameters)
+# optionally return a result
+
 def greet():
     print("Hello, FastAPI beginner!")
 
@@ -29,6 +39,13 @@ print(create_user(name="Bob", age=25))  # Keyword arg, Output: User Bob created,
 # It represents something “unexpected” or “abnormal” that 
 # happened — usually an error or an unusual situation the 
 # program wasn’t expecting to handle in the normal path.
+
+
+# ZeroDivisionError  - 5 / 0
+# IndexError - lst[10]
+# KeyError - d["name"]
+# TypeError - "5" + 3
+
 
 try:
     number = int(input("Enter a number: "))
