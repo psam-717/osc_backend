@@ -38,36 +38,36 @@
 
 ## Example of desire output
 
-Welcome to Personal Budget Calculator!
+- Welcome to Personal Budget Calculator!
 
-What is your name? Alice
-Hello Alice!
+* What is your name? Alice
+- Hello Alice!
 
-Enter your monthly income: abc
-→ Sorry, please enter a valid number.
-Enter your monthly income: -500
-→ Income must be positive. Try again.
-Enter your monthly income: 4500
+* Enter your monthly income: abc
+- → Sorry, please enter a valid number.
+* Enter your monthly income: -500
+- → Income must be positive. Try again.
+* Enter your monthly income: 4500
 
-What is the budget category? Food & Groceries
+* What is the budget category? Food & Groceries
 
-Enter expense 1: 1200
-Enter expense 2: 850.50
-Enter expense 3: xyz
-→ Invalid amount. Please enter a number.
-Enter expense 3: 600
+* Enter expense 1: 1200
+* Enter expense 2: 850.50
+* Enter expense 3: xyz
+- → Invalid amount. Please enter a number.
+* Enter expense 3: 600
 
-Budget Summary for Alice
-──────────────────────────────
-Category          : Food & Groceries
-Monthly Income    : 4500.00
-Total Expenses    : 2650.50
-Remaining Budget  : 1849.50
-→ You are within budget. Great job! ✓
+* Budget Summary for Alice
+* ──────────────────────────────
+* Category          : Food & Groceries
+* Monthly Income    : 4500.00
+* Total Expenses    : 2650.50
+* Remaining Budget  : 1849.50
+* → You are within budget. Great job! ✓
 
 # If over budget
-Remaining Budget  : -320.75
-→ Warning: You are over budget by 320.75!
+* Remaining Budget  : -320.75
+- → Warning: You are over budget by 320.75!
 
 
 # Visit the main.py to get the starter code skeleton
