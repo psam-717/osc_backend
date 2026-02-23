@@ -22,7 +22,7 @@ python test.py
 | `→` / `D` | Move Right |
 | `R` | Restart (after game over) |
 
-## Gameplay
+## Gameplay 
 
 - Guide the snake to eat the red food pellets to grow and earn points.
 - Each food pellet eaten is worth **10 points**.
