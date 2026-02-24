@@ -27,7 +27,7 @@ def standard_deviation(values: Iterable[float], sample: bool = False) -> float:
     mean = sum(values) / n
     var_sum = sum((x - mean) ** 2 for x in values)
     variance = var_sum / (n - 1) if sample else var_sum / n
-    return variance ** 0.5
+    return variance ** 0.5 
 
 
 if __name__ == "__main__":
