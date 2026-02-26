@@ -9,7 +9,7 @@ def get_positive_number(prompt: str) -> float:
         except ValueError as e:
             print(f"Error: {e}. Please try again.")
 
-
+ 
 def calculate_total_expenses(expenses: list[float]) -> float:
     # Your code here
     pass
