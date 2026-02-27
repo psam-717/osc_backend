@@ -20,7 +20,7 @@ python test.py
 | `↓` / `S` | Move Down |
 | `←` / `A` | Move Left |
 | `→` / `D` | Move Right |
-| `R` | Restart (after game over) |
+| `R` | Restart (after game over) | 
 
 ## Gameplay 
 
