@@ -2,24 +2,23 @@
     
 amounts = [10, "hundred", "80", 450, 9.50]
 
+# extract numbers from the list
 
-def calculate_total_expenses(expenses: list[float]):
-    total = 0
-    invalid_expenses = []
-    valid_expenses = []
-    
-    for item in expenses:
+def nums_and_list_separation(dummy_list: list):
+    nums_list = []
+    strings_list = []
+    for item in dummy_list:
         if isinstance(item, (float, int)):
-            valid_expenses.append(item)
-            total += item
-        else: 
-            invalid_expenses.append(item)
-    # print(valid_expenses)
-    return valid_expenses, total
+            nums_list.append(item)
+        else:
+            strings_list.append(item)
+    return nums_list, strings_list
 
 
-data = calculate_total_expenses(amounts)
-print(data)
+nums_list_output, _ = nums_and_list_separation(amounts)
+print()
+print(nums_list_output)
+        
 
 
 # # separating valid from invalid amounts
