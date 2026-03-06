@@ -1,1 +1,38 @@
-Wash my attires - Completed 
+Relational database - Postgresql
+Non-relational database - Mongodb
+
+
+RELATIONAL DATABASE - postgresql
+Datatypes (Categories)
+1. Numeric
+2. Text
+3. Boolean
+4. Date/time
+5. Json
+
+Numeric
+1. Serial: Auto-increment
+2. Integer/int: Ages
+3. Bigint: very large numbers
+
+Text
+VARCHAR(n): Names, user_names
+Text: Large descriptions or notes
+
+Date/Time
+TIMESTAMP: created_at/updated_at
+Date: Birthdates, deadlines
+
+Boolean
+Boolean: False/True
+
+
+Table
+Row/tuple/record
+Column 
+Schema
+
+
+Data integrity
+Primary key: 
+Foreign key
