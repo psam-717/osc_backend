@@ -36,4 +36,4 @@ INSERT INTO books_read(member_id,title,author,rating) VALUES
 (3,'Atomic habits','Lukman Abdul-somed',2.0),
 (5,'How to train your dragon', 'Bintu Abdullah',1.0);
 
-SELECT * FROM books_read;
+SELECT * FROM books_read; 
