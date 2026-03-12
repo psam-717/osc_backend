@@ -32,10 +32,3 @@
 --         ON DELETE CASCADE
 -- );
 
-
-
-SELECT * FROM  tasks
-
-INSERT INTO tasks (title, description, user_id, priority)
-VALUES
-    ('Feed the dog', 'Give it some fried chicken', 5, 5)
