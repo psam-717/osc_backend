@@ -1,66 +1,60 @@
--- Selects
-SELECT * from tasks
-where description is not NULL
-
-SELECT * FROM tasks
-where tasks.priority < 3
-
--- "order by" and "limit" clause 
-SELECT tasks.title, tasks.description, tasks.priority
-FROM tasks
-ORDER BY tasks.priority DESC
-LIMIT 3 
-
-SELECT users.id, users.username, users.email
-from users
-
--- selecting mphil's queries
-select tasks.title, tasks.description, tasks.priority
-from tasks where tasks.user_id in (select id from users where username = 'luk7654')
-
--- selection by ordering user_id in ascending order
-SELECT * FROM tasks order by user_id asc
-
-select users.id, users.email from users where users.username = 'mphil'
- 
-
--- updates
-UPDATE tasks
-SET completed = TRUE
-where tasks.user_id = 7
-
--- user wants to update description
-UPDATE tasks
-set description = 'Wash at the laundromat'
-where tasks.title = 'Wash my clothes'
-
 SELECT * FROM users
-SELECT * FROM tasks order by user_id asc
+SELECT * FROM tasks
+
+-- selection based on conditions
+select * from tasks
+where tasks.priority < 4
+
+select * from tasks
+order by tasks.priority ASC
+
+select * from tasks
+order by tasks.priority DESC
+
+--first four queries (pagination)
+select * from tasks
+ORDER BY tasks.priority ASC
+LIMIT 5
+
+--using subqueries
+select tasks.title, tasks.description, tasks.priority, tasks.user_id, tasks.completed
+from tasks
+where tasks.user_id in (select id from users where users.username = 'mphil')
 
 
--- updating multiple entries in a row simultaneously
+--updates
 UPDATE tasks
-    set title = 'Deploy the backend',
-    description = 'Deployment should be done via render'
-where tasks.id = 5
-
--- updating and returning updated row
-UPDATE tasks
-    set priority = 2
-where tasks.title = 'Do my assignment'
+set completed = TRUE
+where tasks.id = 4
 RETURNING *;
 
---updating using subquery
+UPDATE users
+set username = 'luk'
+where users.email = 'luk@gmail.com'
+RETURNING *;
+
 update tasks
-    set description = 'walk to the next community'
+    set title = 'Eat pizza',
+    description = 'pizza from chicken man'
+where tasks.id = 1
+RETURNING *;
+
+select * from tasks
+select * from users
+
+--updating using a subquery
+update tasks
+    set title = 'Play video games', 
+    description = 'on the ps5'
 where tasks.user_id in (select id from users where username = 'Mikey')
 RETURNING *;
 
+INSERT INTO users(username, full_name, email)
+VALUES ('astro_boy', 'Dunc Oswald', 'astro@gmail.com')
 
---deletion
-Delete from tasks 
-where description is NULL
+-- deletion
+DELETE FROM users
+where username = 'kweku'
 
-select * from tasks
 
 
