@@ -12,7 +12,7 @@ def get_positive_number(prompt: str) -> float:
  
 def calculate_total_expenses(expenses: list[float]) -> float:
     # Your code here
-    pass
+    pass 
 
 
 def calculate_remaining_budget(income: float, total_expenses: float) -> float:
