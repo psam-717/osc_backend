@@ -11,7 +11,7 @@ Create a small database for a simple online book club to practice:
 
 **Task**
 
-1. Create a new database named `book_club`
+1. Create a new database named `book_club` 
 
 2. Create **two tables** inside the `book_club` database:
 
