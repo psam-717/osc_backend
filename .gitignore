@@ -1,0 +1,9 @@
+# Python
+__pycache__/
+*.py[cod]
+*.pyo
+
+# ATM runtime data
+test_projects/atm_app/atm_data.json
+test_projects/atm_app/atm_data.json.bak
+test_projects/atm_app/atm_data.json.tmp
