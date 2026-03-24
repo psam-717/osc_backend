@@ -6,9 +6,12 @@ currency sub-accounts (GHS, USD, GBP) for deposit, withdrawal, and balance
 checks. Account data is persisted to atm_data.json.
 """
 
+import hashlib
 import json
 import os
+import secrets
 from datetime import datetime
+from decimal import Decimal, ROUND_HALF_UP
 
 DATA_FILE = os.path.join(os.path.dirname(__file__), "atm_data.json")
 
@@ -20,10 +23,10 @@ CURRENCIES: dict[str, dict] = {
 }
 
 # Exchange rates expressed in GHS (1 unit of currency = N GHS)
-EXCHANGE_RATES: dict[str, float] = {
-    "GHS": 1.0,
-    "USD": 15.0,
-    "GBP": 19.0,
+EXCHANGE_RATES: dict[str, Decimal] = {
+    "GHS": Decimal("1"),
+    "USD": Decimal("15"),
+    "GBP": Decimal("19"),
 }
 
 
@@ -42,18 +45,18 @@ def get_pin(prompt: str) -> str:
         print("-> PIN must be exactly 4 digits (numbers only).")
 
 
-def get_positive_amount(prompt: str) -> float:
+def get_positive_amount(prompt: str) -> Decimal:
     """Prompt until a valid positive number is entered. Enter 0 to cancel."""
     while True:
         raw = input(prompt + " (0 to go back): ").strip()
         if raw == "0":
             raise BackAction
         try:
-            value = float(raw)
+            value = Decimal(raw)
             if value > 0:
                 return value
             print("-> Amount must be greater than zero.")
-        except ValueError:
+        except Exception:
             print("-> Invalid input. Please enter a number.")
 
 
@@ -67,15 +70,15 @@ def get_menu_choice(prompt: str, valid: list[str]) -> str:
 
 
 def log_transaction(
-    accounts: dict, pin: str, tx_type: str,
-    currency: str, amount: float, balance_after: float
+    accounts: dict, key: str, tx_type: str,
+    currency: str, amount: Decimal, balance_after: Decimal
 ) -> None:
     """Append a timestamped transaction entry to the account's history."""
-    accounts[pin]["transactions"].append({
+    accounts[key]["transactions"].append({
         "type": tx_type,
         "currency": currency,
-        "amount": amount,
-        "balance_after": balance_after,
+        "amount": str(amount),
+        "balance_after": str(balance_after),
         "timestamp": datetime.now().strftime("%Y-%m-%d %H:%M:%S"),
     })
 
@@ -87,13 +90,49 @@ def load_accounts(filepath: str) -> dict:
     if not os.path.exists(filepath):
         return {}
     with open(filepath, "r") as f:
-        return json.load(f)
+        try:
+            data = json.load(f)
+        except json.JSONDecodeError:
+            backup = filepath + ".bak"
+            os.rename(filepath, backup)
+            print(f"-> Warning: account data was corrupted and has been backed up to {backup}.")
+            print("-> Starting with an empty account database.")
+            return {}
+    # Restore Decimal balances from stored strings
+    for account in data.values():
+        account["balances"] = {k: Decimal(str(v)) for k, v in account["balances"].items()}
+    return data
 
 
 def save_accounts(filepath: str, accounts: dict) -> None:
-    """Persist the accounts dict to a JSON file."""
-    with open(filepath, "w") as f:
-        json.dump(accounts, f, indent=2)
+    """Persist the accounts dict to a JSON file atomically."""
+    tmp = filepath + ".tmp"
+    # Serialize Decimal balances as strings for exact round-trip precision
+    serializable = {}
+    for key, account in accounts.items():
+        serializable[key] = {
+            **account,
+            "balances": {k: str(v) for k, v in account["balances"].items()},
+        }
+    try:
+        with open(tmp, "w") as f:
+            json.dump(serializable, f, indent=2)
+        os.replace(tmp, filepath)
+    except OSError as e:
+        raise RuntimeError(f"Failed to save account data: {e}") from e
+
+
+# ── PIN hashing helpers ──────────────────────────────────────────────────────
+
+def generate_salt() -> bytes:
+    """Generate a cryptographically random 16-byte salt."""
+    return secrets.token_bytes(16)
+
+
+def hash_pin(pin: str, salt: bytes) -> str:
+    """Return a hex digest of the PIN hashed with PBKDF2-HMAC-SHA256."""
+    dk = hashlib.pbkdf2_hmac("sha256", pin.encode(), salt, iterations=100_000)
+    return dk.hex()
 
 
 # ── Account logic ────────────────────────────────────────────────────────────
@@ -117,7 +156,7 @@ def create_account(accounts: dict) -> str:
     Guide the user through creating a new account.
     Prompts for a name and a unique 4-digit PIN.
     Initializes three currency sub-accounts (GHS, USD, GBP) at 0.0.
-    Returns the new PIN on success.
+    Returns the account key (PIN hash) on success.
     """
     print("\n--- Create New Account ---")
     name = ""
@@ -128,33 +167,37 @@ def create_account(accounts: dict) -> str:
 
     while True:
         pin = get_pin("Choose a 4-digit PIN: ")
-        if pin in accounts:
+        salt = generate_salt()
+        key = hash_pin(pin, salt)
+        if key in accounts:
             print("-> That PIN is already taken. Please choose a different one.")
         else:
             break
 
-    accounts[pin] = {
+    accounts[key] = {
         "name": name,
-        "balances": {code: 0.0 for code in CURRENCIES},
+        "pin_salt": salt.hex(),
+        "balances": {code: Decimal("0") for code in CURRENCIES},
         "transactions": [],
     }
     print(f"\nAccount created! Welcome, {name}. All sub-account balances start at 0.00.")
-    return pin
+    return key
 
 
 def login(accounts: dict) -> str | None:
     """
     Prompt the user for their PIN and validate it.
-    Allows up to 3 attempts. Returns the PIN on success, or None on failure.
+    Allows up to 3 attempts. Returns the account key on success, or None on failure.
     """
     print("\n--- Login ---")
     max_attempts = 3
     for attempt in range(1, max_attempts + 1):
         pin = get_pin("Enter your 4-digit PIN: ")
-        if pin in accounts:
-            name = accounts[pin]["name"]
-            print(f"\nWelcome back, {name}!")
-            return pin
+        for key, account in accounts.items():
+            salt = bytes.fromhex(account["pin_salt"])
+            if hash_pin(pin, salt) == key:
+                print(f"\nWelcome back, {account['name']}!")
+                return key
         remaining = max_attempts - attempt
         if remaining > 0:
             print(f"-> Incorrect PIN. {remaining} attempt(s) remaining.")
@@ -165,47 +208,47 @@ def login(accounts: dict) -> str | None:
 
 # ── ATM operations ───────────────────────────────────────────────────────────
 
-def check_balance(accounts: dict, pin: str) -> None:
+def check_balance(accounts: dict, key: str) -> None:
     """Display all currency sub-account balances for the given account."""
-    balances = accounts[pin]["balances"]
+    balances = accounts[key]["balances"]
     print("\nYour balances:")
     for code, info in CURRENCIES.items():
         print(f"  {info['name']:<20} {info['symbol']}{balances[code]:>12,.2f}")
 
 
-def deposit(accounts: dict, pin: str, currency: str, amount: float) -> float:
+def deposit(accounts: dict, key: str, currency: str, amount: Decimal) -> Decimal:
     """
     Add amount to the specified currency sub-account.
     Logs the transaction. Returns the updated sub-account balance.
     """
-    accounts[pin]["balances"][currency] += amount
-    new_balance = accounts[pin]["balances"][currency]
-    log_transaction(accounts, pin, "deposit", currency, amount, new_balance)
+    accounts[key]["balances"][currency] += amount
+    new_balance = accounts[key]["balances"][currency]
+    log_transaction(accounts, key, "deposit", currency, amount, new_balance)
     return new_balance
 
 
-def withdraw(accounts: dict, pin: str, currency: str, amount: float) -> float:
+def withdraw(accounts: dict, key: str, currency: str, amount: Decimal) -> Decimal:
     """
     Deduct amount from the specified currency sub-account.
     Raises ValueError if funds are insufficient.
     Logs the transaction. Returns the updated sub-account balance.
     """
     symbol = CURRENCIES[currency]["symbol"]
-    current = accounts[pin]["balances"][currency]
+    current = accounts[key]["balances"][currency]
     if amount > current:
         raise ValueError(
             f"Insufficient funds. Available {CURRENCIES[currency]['name']} balance: "
             f"{symbol}{current:,.2f}"
         )
-    accounts[pin]["balances"][currency] -= amount
-    new_balance = accounts[pin]["balances"][currency]
-    log_transaction(accounts, pin, "withdrawal", currency, amount, new_balance)
+    accounts[key]["balances"][currency] -= amount
+    new_balance = accounts[key]["balances"][currency]
+    log_transaction(accounts, key, "withdrawal", currency, amount, new_balance)
     return new_balance
 
 
-def view_transactions(accounts: dict, pin: str) -> None:
+def view_transactions(accounts: dict, key: str) -> None:
     """Print the last 10 transactions for the account in a formatted table."""
-    history = accounts[pin]["transactions"]
+    history = accounts[key]["transactions"]
     if not history:
         print("\nNo transactions yet.")
         return
@@ -216,26 +259,30 @@ def view_transactions(accounts: dict, pin: str) -> None:
         code = tx["currency"]
         symbol = CURRENCIES[code]["symbol"]
         currency_name = CURRENCIES[code]["name"]
+        amount = Decimal(str(tx["amount"]))
+        balance_after = Decimal(str(tx["balance_after"]))
         print(
             f"{i:<4} {tx['timestamp']:<20} {tx['type']:<14} {currency_name:<18} "
-            f"{symbol}{tx['amount']:>12,.2f}     {symbol}{tx['balance_after']:>12,.2f}"
+            f"{symbol}{amount:>12,.2f}     {symbol}{balance_after:>12,.2f}"
         )
 
 
-def change_pin(accounts: dict, current_pin: str) -> str:
+def change_pin(accounts: dict, current_key: str) -> str:
     """
     Let the user change their PIN.
     Verifies the current PIN, prompts for a new one (confirmed twice).
     New PIN must not already be taken. Enter 0 at any prompt to cancel.
-    Returns the new PIN after updating the accounts dict.
+    Returns the new account key after updating the accounts dict.
     """
     print("\n--- Change PIN --- (enter 0 to cancel)")
-    confirm = input("Confirm your current PIN: ").strip()
-    if confirm == "0":
+    confirm_raw = input("Confirm your current PIN: ").strip()
+    if confirm_raw == "0":
         raise BackAction
-    if confirm != current_pin:
+    # Verify the entered PIN matches the stored hash
+    salt = bytes.fromhex(accounts[current_key]["pin_salt"])
+    if hash_pin(confirm_raw, salt) != current_key:
         print("-> Incorrect PIN. PIN change cancelled.")
-        return current_pin
+        return current_key
 
     while True:
         new_pin = input("Enter new PIN: ").strip()
@@ -244,10 +291,12 @@ def change_pin(accounts: dict, current_pin: str) -> str:
         if not (new_pin.isdigit() and len(new_pin) == 4):
             print("-> PIN must be exactly 4 digits (numbers only).")
             continue
-        if new_pin == current_pin:
+        new_salt = generate_salt()
+        new_key = hash_pin(new_pin, new_salt)
+        if new_key == current_key:
             print("-> New PIN must be different from the current PIN.")
             continue
-        if new_pin in accounts:
+        if new_key in accounts:
             print("-> That PIN is already in use. Choose a different one.")
             continue
         confirm_new = input("Confirm new PIN: ").strip()
@@ -258,16 +307,16 @@ def change_pin(accounts: dict, current_pin: str) -> str:
             continue
         break
 
-    # Re-key the account under the new PIN
-    accounts[new_pin] = accounts.pop(current_pin)
+    # Copy to new key first; caller saves before we delete, so old key survives any save failure
+    accounts[new_key] = {**accounts[current_key], "pin_salt": new_salt.hex()}
     print("PIN changed successfully!")
-    return new_pin
+    return new_key
 
 
 def transfer(
-    accounts: dict, pin: str,
-    from_currency: str, to_currency: str, amount: float
-) -> tuple[float, float]:
+    accounts: dict, key: str,
+    from_currency: str, to_currency: str, amount: Decimal
+) -> tuple[Decimal, Decimal]:
     """
     Transfer amount from one currency sub-account to another.
     Converts via GHS as base using EXCHANGE_RATES.
@@ -276,7 +325,7 @@ def transfer(
     Returns (new_from_balance, new_to_balance).
     """
     from_symbol = CURRENCIES[from_currency]["symbol"]
-    current = accounts[pin]["balances"][from_currency]
+    current = accounts[key]["balances"][from_currency]
     if amount > current:
         raise ValueError(
             f"Insufficient funds. Available {CURRENCIES[from_currency]['name']} balance: "
@@ -285,16 +334,18 @@ def transfer(
 
     # Convert: amount in from_currency → GHS → to_currency
     amount_in_ghs = amount * EXCHANGE_RATES[from_currency]
-    converted_amount = amount_in_ghs / EXCHANGE_RATES[to_currency]
+    converted_amount = (amount_in_ghs / EXCHANGE_RATES[to_currency]).quantize(
+        Decimal("0.01"), rounding=ROUND_HALF_UP
+    )
 
-    accounts[pin]["balances"][from_currency] -= amount
-    new_from = accounts[pin]["balances"][from_currency]
+    accounts[key]["balances"][from_currency] -= amount
+    new_from = accounts[key]["balances"][from_currency]
 
-    accounts[pin]["balances"][to_currency] += converted_amount
-    new_to = accounts[pin]["balances"][to_currency]
+    accounts[key]["balances"][to_currency] += converted_amount
+    new_to = accounts[key]["balances"][to_currency]
 
-    log_transaction(accounts, pin, "transfer_out", from_currency, amount, new_from)
-    log_transaction(accounts, pin, "transfer_in", to_currency, converted_amount, new_to)
+    log_transaction(accounts, key, "transfer_out", from_currency, amount, new_from)
+    log_transaction(accounts, key, "transfer_in", to_currency, converted_amount, new_to)
 
     return new_from, new_to
 
@@ -321,15 +372,18 @@ def run_atm() -> None:
             break
 
         if choice == "2":
-            pin = create_account(accounts)
-            save_accounts(DATA_FILE, accounts)
+            key = create_account(accounts)
+            try:
+                save_accounts(DATA_FILE, accounts)
+            except RuntimeError as e:
+                print(f"-> Warning: {e}. Your account was created but may not persist after restart.")
         else:
-            pin = login(accounts)
-            if pin is None:
+            key = login(accounts)
+            if key is None:
                 continue
 
         # ATM session menu
-        name = accounts[pin]["name"]
+        name = accounts[key]["name"]
         while True:
             print(f"\nATM Menu  ({name})")
             print("  [1] Check Balance")
@@ -346,15 +400,18 @@ def run_atm() -> None:
                 break
 
             elif action == "1":
-                check_balance(accounts, pin)
+                check_balance(accounts, key)
 
             elif action == "2":
                 try:
                     currency = get_currency_choice()
                     symbol = CURRENCIES[currency]["symbol"]
                     amount = get_positive_amount(f"Enter deposit amount ({symbol})")
-                    new_balance = deposit(accounts, pin, currency, amount)
-                    save_accounts(DATA_FILE, accounts)
+                    new_balance = deposit(accounts, key, currency, amount)
+                    try:
+                        save_accounts(DATA_FILE, accounts)
+                    except RuntimeError as e:
+                        print(f"-> Warning: {e}. Transaction recorded in session but not saved to disk.")
                     print(
                         f"Deposited {symbol}{amount:,.2f} into {CURRENCIES[currency]['name']} account. "
                         f"New balance: {symbol}{new_balance:,.2f}"
@@ -368,8 +425,11 @@ def run_atm() -> None:
                     symbol = CURRENCIES[currency]["symbol"]
                     amount = get_positive_amount(f"Enter withdrawal amount ({symbol})")
                     try:
-                        new_balance = withdraw(accounts, pin, currency, amount)
-                        save_accounts(DATA_FILE, accounts)
+                        new_balance = withdraw(accounts, key, currency, amount)
+                        try:
+                            save_accounts(DATA_FILE, accounts)
+                        except RuntimeError as e:
+                            print(f"-> Warning: {e}. Transaction recorded in session but not saved to disk.")
                         print(
                             f"Withdrew {symbol}{amount:,.2f} from {CURRENCIES[currency]['name']} account. "
                             f"New balance: {symbol}{new_balance:,.2f}"
@@ -392,10 +452,14 @@ def run_atm() -> None:
                     to_symbol = CURRENCIES[to_currency]["symbol"]
                     amount = get_positive_amount(f"Enter amount to transfer ({from_symbol})")
                     try:
-                        new_from, new_to = transfer(accounts, pin, from_currency, to_currency, amount)
-                        save_accounts(DATA_FILE, accounts)
-                        amount_ghs = amount * EXCHANGE_RATES[from_currency]
-                        converted = amount_ghs / EXCHANGE_RATES[to_currency]
+                        new_from, new_to = transfer(accounts, key, from_currency, to_currency, amount)
+                        converted = (amount * EXCHANGE_RATES[from_currency] / EXCHANGE_RATES[to_currency]).quantize(
+                            Decimal("0.01"), rounding=ROUND_HALF_UP
+                        )
+                        try:
+                            save_accounts(DATA_FILE, accounts)
+                        except RuntimeError as e:
+                            print(f"-> Warning: {e}. Transaction recorded in session but not saved to disk.")
                         print(
                             f"Transferred {from_symbol}{amount:,.2f} → "
                             f"{to_symbol}{converted:,.2f} "
@@ -409,13 +473,21 @@ def run_atm() -> None:
                     print("Cancelled. Returning to menu.")
 
             elif action == "5":
-                view_transactions(accounts, pin)
+                view_transactions(accounts, key)
 
             elif action == "6":
                 try:
-                    pin = change_pin(accounts, pin)
-                    save_accounts(DATA_FILE, accounts)
-                    name = accounts[pin]["name"]
+                    old_key = key
+                    key = change_pin(accounts, key)
+                    if key != old_key:
+                        try:
+                            save_accounts(DATA_FILE, accounts)
+                            # Delete old key only after a successful save
+                            del accounts[old_key]
+                            save_accounts(DATA_FILE, accounts)
+                        except RuntimeError as e:
+                            print(f"-> Warning: {e}. PIN change recorded in session but may not persist.")
+                    name = accounts[key]["name"]
                 except BackAction:
                     print("Cancelled. Returning to menu.")
 

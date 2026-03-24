@@ -1,11 +1,62 @@
 {
-  "4040": {
-    "name": "Marvinphil",
+  "45986613956cf378f33351d8c660a60274e3c19f36b52d26ef245a94b3ef0c20": {
+    "name": "marvin",
+    "pin_salt": "fb693b976e99f2415308bc6fbf7b2216",
     "balances": {
-      "GHS": 0.0,
-      "USD": 0.0,
-      "GBP": 0.0
+      "GHS": "699497500000",
+      "USD": "399000000000",
+      "GBP": "815789473.68"
     },
-    "transactions": []
+    "transactions": [
+      {
+        "type": "deposit",
+        "currency": "USD",
+        "amount": "400000000000",
+        "balance_after": "400000000000",
+        "timestamp": "2026-03-24 19:14:06"
+      },
+      {
+        "type": "deposit",
+        "currency": "GHS",
+        "amount": "700000000000",
+        "balance_after": "700000000000",
+        "timestamp": "2026-03-24 19:14:29"
+      },
+      {
+        "type": "transfer_out",
+        "currency": "GHS",
+        "amount": "500000000",
+        "balance_after": "699500000000",
+        "timestamp": "2026-03-24 19:14:50"
+      },
+      {
+        "type": "transfer_in",
+        "currency": "GBP",
+        "amount": "26315789.47",
+        "balance_after": "26315789.47",
+        "timestamp": "2026-03-24 19:14:50"
+      },
+      {
+        "type": "transfer_out",
+        "currency": "USD",
+        "amount": "1000000000",
+        "balance_after": "399000000000",
+        "timestamp": "2026-03-24 19:15:32"
+      },
+      {
+        "type": "transfer_in",
+        "currency": "GBP",
+        "amount": "789473684.21",
+        "balance_after": "815789473.68",
+        "timestamp": "2026-03-24 19:15:32"
+      },
+      {
+        "type": "withdrawal",
+        "currency": "GHS",
+        "amount": "2500000",
+        "balance_after": "699497500000",
+        "timestamp": "2026-03-24 19:16:11"
+      }
+    ]
   }
 }
