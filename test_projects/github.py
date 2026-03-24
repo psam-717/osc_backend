@@ -14,7 +14,7 @@ Learning module covering Python functions and exception handling.
 
 def greet() -> str:
     """Returns a greeting message."""
-    return "Hello, FastAPI beginner!"
+    return "Hello, FastAPI beginner!" 
 
 
 def add_numbers(a: int, b: int) -> int:
