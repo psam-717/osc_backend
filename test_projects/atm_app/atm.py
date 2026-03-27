@@ -115,7 +115,7 @@ def save_accounts(filepath: str, accounts: dict) -> None:
             "balances": {k: str(v) for k, v in account["balances"].items()},
         }
     try:
-        with open(tmp, "w") as f: 
+        with open(tmp, "w") as f:    
             json.dump(serializable, f, indent=2)
         os.replace(tmp, filepath)
     except OSError as e:
