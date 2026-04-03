@@ -117,7 +117,7 @@ def save_accounts(filepath: str, accounts: dict) -> None:
     try:
         with open(tmp, "w") as f:    
             json.dump(serializable, f, indent=2)
-        os.replace(tmp, filepath) 
+        os.replace(tmp, filepath)  
     except OSError as e:
         raise RuntimeError(f"Failed to save account data: {e}") from e
 
