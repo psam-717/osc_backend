@@ -10,7 +10,7 @@
 
 - PostgreSQL
 - Microsoft SQL Server
-- My SQL 
+- My SQL     
 
 **Non-relational**: Stores data without a fixed table structure — uses flexible models like documents (JSON-like), key-value pairs, wide columns, or graphs. Schema is dynamic (can change easily).
 
