@@ -16,7 +16,7 @@ def greet() -> str:
     """Returns a greeting message."""
     return "Hello, FastAPI beginner!" 
 
-
+  
 def add_numbers(a: int, b: int) -> int:
     """Adds two numbers and returns the result."""
     return a + b
