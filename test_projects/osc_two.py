@@ -11,7 +11,7 @@ def get_positive_number(prompt: str) -> float:
 
 
 def get_non_numeric_string(prompt: str):
-    while True:
+    while True: 
         s = input(prompt)
         
         if not s:
