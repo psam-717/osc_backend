@@ -25,7 +25,7 @@ def add_numbers(a: int, b: int) -> int:
 def create_user(name: str, age: int = 18) -> str:
     """Creates a user and returns a confirmation message."""
     return f"User {name} created, age {age}."
-
+  
 
 # EXCEPTIONS
 
