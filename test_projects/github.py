@@ -4,7 +4,7 @@ Learning module covering Python functions and exception handling.
 
 # FUNCTIONS
 # A function in Python is a named block of reusable code that performs a specific task.
-
+ 
 # It lets you:
 
 # give a name to a piece of logic
