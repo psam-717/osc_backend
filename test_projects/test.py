@@ -1,42 +1,33 @@
-
-    
-amounts = [10, "hundred", "80", 450, 9.50]
-
-# extract numbers from the list
-
-def nums_and_list_separation(dummy_list: list):
-    nums_list = []
-    strings_list = []
-    for item in dummy_list:
-        if isinstance(item, (float, int)):
-            nums_list.append(item)
-        else:
-            strings_list.append(item)
-    return nums_list, strings_list
+from typing import List
 
 
-nums_list_output, _ = nums_and_list_separation(amounts)
-print()
-print(nums_list_output)
-        
+def extract_numbers(items: list[object]) -> list[int | float]:
+    """Return numeric values from a mixed list.
+
+    Converts numeric strings (e.g. '80' or '9.5') to numbers and ignores non-numeric values.
+    """
+    nums: list[int | float] = []
+    for item in items:
+        if isinstance(item, (int, float)):
+            nums.append(item)
+        elif isinstance(item, str):
+            s = item.strip()
+            # Try to parse as int first, then float; skip if both fail
+            try:
+                if "." in s:
+                    val = float(s)
+                else:
+                    val = int(s)
+            except ValueError:
+                try:
+                    val = float(s)
+                except ValueError:
+                    continue
+            nums.append(val)
+    return nums
 
 
-# # separating valid from invalid amounts
-# invalid_amounts = []
-# valid_amounts = []
-# for i in amounts:
-#     if (type(i) is not int) and (type(i) is not float):
-#         invalid_amounts.append(i)
-#     else:
-#         valid_amounts.append(i)
-# print(invalid_amounts)
-# print(valid_amounts)
-
-# invalid_amounts.append("one")
-# invalid_amounts.append("two")
-# print(invalid_amounts)
-
-
-# for i in invalid_amounts:
-#     amounts.remove(i)
-# print(amounts)
+if __name__ == "__main__":
+    amounts = [10, "hundred", "80", 450, 9.50]
+    numbers = extract_numbers(amounts)
+    print(numbers)
