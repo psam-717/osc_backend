@@ -30,4 +30,4 @@ def extract_numbers(items: list[object]) -> list[int | float]:
 if __name__ == "__main__":
     amounts = [10, "hundred", "80", 450, 9.50]
     numbers = extract_numbers(amounts)
-    print(numbers)
+    print(numbers) 
