@@ -36,7 +36,6 @@ def expenses_count():
         return s
  
 def calculate_total_expenses(expenses: list[float]) -> float:
-    # Your code here
     total = 0
     invalid_expenses = []
     valid_expenses = []
@@ -55,7 +54,6 @@ def calculate_remaining_budget(income: float, total_expenses: float) -> float:
 
 def print_budget_summary(name: str, category: str, income: float,
                          expenses: list[float], remaining: float):
-    # Your code here - make it look nice!
     print(f"budget summary for {name}")
     print(f"category {category}")
     print(f"Monthly income {income}")
