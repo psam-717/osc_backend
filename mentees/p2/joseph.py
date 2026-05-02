@@ -26,7 +26,6 @@ def get_positive_number(prompt: str, title: str) -> float:
 
 
 def calculate_total_expenses(expenses: list[float]) -> float:
-    # Your code here
     total_expenses = 0
     for amount in expenses:
         total_expenses += amount
@@ -34,14 +33,12 @@ def calculate_total_expenses(expenses: list[float]) -> float:
 
 
 def calculate_remaining_budget(income: float, total_expenses: float) -> float:
-    # Your code here
     remaining_budget = income - total_expenses
     return remaining_budget
 
 
 def print_budget_summary(name: str, category: str, income: float,
                          expenses: float, remaining: float):
-    # Your code here - make it look nice!
     print("_______________________________")
     print(f"| Budget Summary For {name}  📊|")
     print("_______________________________")
