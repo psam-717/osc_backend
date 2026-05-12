@@ -10,7 +10,7 @@ def get_string_only(prompt: str, title: str) -> str:
         except ValueError:
             return value
   
-def get_positive_number(prompt: str, title: str) -> float:
+def get_positive_number(prompt: str, title: str) -> float: 
     """Ask for input until a positive number is received."""
     while True:
         try:
