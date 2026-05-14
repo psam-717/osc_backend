@@ -19,7 +19,7 @@ def get_positive_number(prompt: str, title: str) -> float:
                 print("----------------------------------")
                 raise ValueError("Value must be positive!")
             return value
-        except ValueError:
+        except ValueError:   
             print("----------------------------------------------------------------------------")
             print(f"❌Error: {title} should be a valid amount (Eg GH₵200). Please try again.")
             print("----------------------------------------------------------------------------")
