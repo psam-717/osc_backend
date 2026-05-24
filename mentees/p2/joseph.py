@@ -15,7 +15,7 @@ def get_positive_number(prompt: str, title: str) -> float:
     while True:
         try:
             value = float(input(prompt))
-            if value <= 0:
+            if value <= 0: 
                 print("----------------------------------")
                 raise ValueError("Value must be positive!")
             return value
