@@ -78,7 +78,7 @@ def balance(salary,total):
 
 def display_cat(category):
     for cat, itms in categories.items():
-        print(f"\nCategory: {cat}")
+        print(f"\nCategory: {cat}")   
         for name, amt in itms.items():
             print(f" {name}: {amt}")    
 #summary
