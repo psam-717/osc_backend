@@ -69,7 +69,7 @@ def cal_expenses(categories):
             total_expenses += categories[item][itm]
     return total_expenses
  
-
+ 
 
 def balance(salary,total):
     
