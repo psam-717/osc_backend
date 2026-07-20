@@ -1,0 +1,65 @@
+@import "tailwindcss";
+
+
+/* ===========================
+   DESIGN TOKENS
+   =========================== */
+:root {
+  --bg:         #090d12;
+  --surface:    #0e1420;
+  --surface-2:  #131c2b;
+  --border:     #1e2b3c;
+  --border-2:   #243040;
+  --accent:     #38bdf8;
+  --accent-dim: rgba(56, 189, 248, 0.10);
+  --text:       #dde4ef;
+  --text-2:     #6b7fa0;
+  --text-3:     #3f5170;
+  --mono:       'JetBrains Mono', monospace;
+}
+
+/* ===========================
+   GLOBAL RESET
+   =========================== */
+*, *::before, *::after { box-sizing: border-box; }
+
+html {
+  scroll-behavior: smooth;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+body {
+  background-color: var(--bg);
+  color: var(--text);
+  font-family: 'Inter', sans-serif;
+  font-size: 14px;
+  line-height: 1.6;
+  min-height: 100vh;
+}
+
+/* ===========================
+   ROOT BACKGROUND
+   =========================== */
+#root {
+  min-height: 100vh;
+  background-image:
+    radial-gradient(ellipse 70% 50% at 10% 0%, rgba(56, 189, 248, 0.05) 0%, transparent 55%),
+    radial-gradient(ellipse 50% 40% at 90% 100%, rgba(56, 189, 248, 0.03) 0%, transparent 55%);
+}
+
+/* ===========================
+   SCROLLBAR
+   =========================== */
+::-webkit-scrollbar       { width: 3px; }
+::-webkit-scrollbar-track { background: transparent; }
+::-webkit-scrollbar-thumb { background: var(--border-2); border-radius: 99px; }
+::-webkit-scrollbar-thumb:hover { background: var(--accent); }
+* { scrollbar-width: thin; scrollbar-color: var(--border-2) transparent; }
+
+/* ===========================
+   RESETS
+   =========================== */
+button { cursor: pointer; border: none; background: none; font-family: inherit; color: inherit; }
+input  { font-family: inherit; color: inherit; }
+input:focus { outline: none; }
